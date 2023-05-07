@@ -1,8 +1,9 @@
 //AVL tree
 #include<iostream>
 #include <fstream>
+#include <climits>
 
-std::ifstream fin("abce.in");
+std::ifstream fin("grader_test8.in");
 std::ofstream fout("abce.out");
 
 struct nod {
@@ -13,6 +14,11 @@ struct nod {
 	int inaltime;
 
 	nod(int valoare) : valoare(valoare), stanga(NULL), dreapta(NULL), inaltime(1) {}
+
+	int GetVal()
+	{
+		return valoare;
+	}
 
 };
 
@@ -86,7 +92,6 @@ public:
 			dr->inaltime = 1 + calch(dr->stanga);
 		}
 
-		//return n;
 		return dr;
 	}
 	nod* R_Dreapta(nod* n)
@@ -115,9 +120,9 @@ public:
 			st->inaltime = 1 + calch(st->stanga);
 		}
 
-		//return n;
 		return st;
 	}
+
 	nod* Insert(nod* node, int valoare)
 	{
 		if (node == NULL)
@@ -169,45 +174,51 @@ public:
 
 		return node;
 	}
+
 	nod* Delete(nod* node, int valoare)
 	{
-		if (node == NULL)
-			return node;
-		else if (valoare < node->valoare)
+		
+
+		if (node == nullptr) {
+			return nullptr;
+		}
+
+		if (valoare < node->valoare) {
 			node->stanga = Delete(node->stanga, valoare);
-		else if (valoare > node->valoare)
-			node->dreapta = Delete(node->stanga, valoare);
-		else
-		{
-			nod* st = node->stanga;
-			nod* dr = node->dreapta;
-			nod* temp = NULL;
-			
-			if (st == NULL && dr == NULL)
-			{
-				//nodul nu are copii
-				node = temp;
-			}
-			else if (st == NULL || dr == NULL)
-			{
-				//nodul are un copil
-				if (st != NULL)
-				{
-					node = st;
-					st = temp;
+		}
+		else if (valoare > node->valoare) {
+			node->dreapta = Delete(node->dreapta, valoare);
+		}
+		else {
+			// Cazul 1: nodul are cel mult un copil sau nu are niciun copil
+			if (node->stanga == nullptr || node->dreapta == nullptr) {
+				nod* temp = node->stanga ? node->stanga : node->dreapta;
+
+				// Nu are niciun copil
+				if (temp == nullptr) {
+					temp = node;
+					node = nullptr;
 				}
-				else if(dr != NULL){
-					node = dr;
-					dr = temp;
+				else { // Are un singur copil
+					*node = *temp;
 				}
+
+				delete temp;
 			}
 			else {
-				//nodul are 2 copii
-				nod* succ = succ_jos(node);
-				node->valoare = succ->valoare;
-				node->dreapta = Delete(node->dreapta, succ->valoare);
+				// Cazul 2: nodul are doi copii, inlocuim cu succesorul in ordine
+				nod* temp = succ_jos(node->dreapta);
+				node->valoare = temp->valoare;
+				node->dreapta = Delete(node->dreapta, temp->valoare);
 			}
 		}
+
+		if (node == nullptr) {
+			return nullptr;
+		}
+
+		// Reechilibrare
+
 
 		//refacem structura AVL
 		//inaltimea
@@ -247,6 +258,16 @@ public:
 
 	}
 
+	void Afis(nod* node)
+	{
+		if (node != NULL)
+		{
+			Afis(node->stanga);
+			std::cout << node->valoare << " ";
+			Afis(node->dreapta);
+		}
+	}
+
 	void AfisInt(nod* node, int y, int z)
 	{
 		if (node != NULL)
@@ -262,52 +283,65 @@ public:
 	{
 		if (node == NULL)
 			return 0;
-
-		if (node->valoare == valoare)
-			return 1;
-		else if (node->valoare > valoare)
-			find(node->stanga, valoare);
 		else
-			find(node->dreapta, valoare);
-	}
-
-	//cel mai mic nr mai mare sau egal decat x
-	int min(nod* node, int x)
-	{	
-		int maxim = INT_MAX;
-		while (node != NULL) {
-			if (node->valoare == x) {
-				return x;
-			}
-			else if (node->valoare > x) {
-					maxim = node->valoare;
-					node = node->stanga;
-				}
+		{
+			if (node->valoare == valoare)
+				return 1;
 			else {
-				node = node->dreapta;
+				if (node->valoare > valoare)
+					find(node->stanga, valoare);
+				else
+					find(node->dreapta, valoare);
 			}
 		}
-		return maxim;
 	}
-
-	//cel mai mare nr mai mic sau egal decat x
-	int max(nod* node, int x)
+	
+	//cel mai mic nr mai mare sau egal decat x
+	int min(nod* n, int x)
 	{
-		int minim = INT_MIN;
-		while (node != NULL) {
-			if (node->valoare == x) {
-				return x;
-			}
-			else if (node->valoare < x) {
-				minim = node->valoare;
-				node = node->dreapta;
-			}
-			else {
-				node = node->stanga;
-			}
+		int minim = INT_MAX;
+		while (n) 
+		{
+			if (n->valoare < x)
+				n = n->dreapta;
+			else
+				if (n->valoare > x)
+				{
+					if (n->valoare < minim)
+						minim = n->valoare;
+
+					n = n->stanga;
+				}
+				else
+					return x;
 		}
 		return minim;
 	}
+
+	//cel mai mare nr mai mic sau egal decat x
+	int max(nod* n, int x)
+	{
+		int maxim = INT_MIN;
+
+		while (n) 
+		{
+			if (n->valoare > x)
+				n = n->stanga;
+			else
+				if (n->valoare < x)
+				{
+					if (n->valoare > maxim)
+						maxim = n->valoare;
+
+					n = n->dreapta;
+				}
+				else
+					return x;
+		}
+
+		return maxim;
+	}
+	
 
 };
 
@@ -346,7 +380,7 @@ int main()
 		case(4):
 		{
 			fin >> y;
-			fout << copacel.max(radacina, y) << std::endl;;
+			fout << copacel.max(radacina, y) << std::endl;
 			break;
 		}
 		case(5):
