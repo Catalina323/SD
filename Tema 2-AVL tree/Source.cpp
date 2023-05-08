@@ -3,7 +3,7 @@
 #include <fstream>
 #include <climits>
 
-std::ifstream fin("grader_test8.in");
+std::ifstream fin("abce.in");
 std::ofstream fout("abce.out");
 
 struct nod {
@@ -14,12 +14,6 @@ struct nod {
 	int inaltime;
 
 	nod(int valoare) : valoare(valoare), stanga(NULL), dreapta(NULL), inaltime(1) {}
-
-	int GetVal()
-	{
-		return valoare;
-	}
-
 };
 
 class AVL {
@@ -37,35 +31,21 @@ public:
 	nod* succ_jos(nod* n)
 	{
 	
-		nod* dr = n->dreapta;
-		if (dr != NULL)
-		{
-			while (dr->stanga != NULL)
-				dr = dr->stanga;
+		nod* curent = n;
 
-			return dr;
-		}
-		else
-			return n;
+		while (curent->stanga != NULL)
+			curent = curent->stanga;
+
+		return curent;
 	}
-	int balance(nod* n)
+
+	int balance(nod* N)
 	{
-		int balance;
-		if (n == NULL || (n->stanga == NULL && n->dreapta == NULL))
-			balance = 0;
-		else
-		{
-			if (n->stanga == NULL)
-				balance = 0 - n->dreapta->inaltime;
-			else if (n->dreapta == NULL)
-				balance = n->stanga->inaltime;
-			else
-				balance = n->stanga->inaltime - n->dreapta->inaltime;
-		}
-
-		return balance;
-
+		if (N == NULL)
+			return 0;
+		return calch(N->stanga) - calch(N->dreapta);
 	}
+
 	nod* R_Stanga(nod* n)
 	{
 		nod* dr = n->dreapta;
@@ -150,24 +130,28 @@ public:
 			node->inaltime = 1 + calch(node->stanga);
 		}
 
-		// Cazul stanga-stanga
-		if (balance(node) > 1 && balance(node->stanga) >= 0) {
-			return R_Dreapta(node);
-		}
+		
 
-		// Cazul stanga-dreapta
-		if (balance(node) > 1 && balance(node->stanga) < 0) {
+		int bal = balance(node);
+
+		// stanga stanga
+		if (bal > 1 && valoare < node->stanga->valoare)
+			return R_Dreapta(node);
+
+		// dreapta dreapta
+		if (bal < -1 && valoare > node->dreapta->valoare)
+			return R_Stanga(node);
+
+		// stanga dreapta
+		if (bal > 1 && valoare > node->stanga->valoare)
+		{
 			node->stanga = R_Stanga(node->stanga);
 			return R_Dreapta(node);
 		}
 
-		// Cazul dreapta-dreapta
-		if (balance(node) < -1 && balance(node->dreapta) <= 0) {
-			return R_Stanga(node);
-		}
-
-		// Cazul dreapta-stanga
-		if (balance(node) < -1 && balance(node->dreapta) > 0) {
+		// dreapta stanga
+		if (bal < -1 && valoare < node->dreapta->valoare)
+		{
 			node->dreapta = R_Dreapta(node->dreapta);
 			return R_Stanga(node);
 		}
@@ -179,8 +163,8 @@ public:
 	{
 		
 
-		if (node == nullptr) {
-			return nullptr;
+		if (node == NULL) {
+			return NULL;
 		}
 
 		if (valoare < node->valoare) {
@@ -190,35 +174,32 @@ public:
 			node->dreapta = Delete(node->dreapta, valoare);
 		}
 		else {
-			// Cazul 1: nodul are cel mult un copil sau nu are niciun copil
-			if (node->stanga == nullptr || node->dreapta == nullptr) {
+			// cel mult un copil 
+			if (node->stanga == NULL || node->dreapta == NULL) {
 				nod* temp = node->stanga ? node->stanga : node->dreapta;
 
-				// Nu are niciun copil
-				if (temp == nullptr) {
+				// niciun copil
+				if (temp == NULL) {
 					temp = node;
-					node = nullptr;
+					node = NULL;
 				}
-				else { // Are un singur copil
+				else { // un singur copil
 					*node = *temp;
 				}
 
 				delete temp;
 			}
 			else {
-				// Cazul 2: nodul are doi copii, inlocuim cu succesorul in ordine
+				// nodul are doi copii
 				nod* temp = succ_jos(node->dreapta);
 				node->valoare = temp->valoare;
 				node->dreapta = Delete(node->dreapta, temp->valoare);
 			}
 		}
 
-		if (node == nullptr) {
-			return nullptr;
+		if (node == NULL) {
+			return NULL;
 		}
-
-		// Reechilibrare
-
 
 		//refacem structura AVL
 		//inaltimea
@@ -232,23 +213,23 @@ public:
 
 		//balance
 
-		// Cazul stanga-stanga
+		// stanga stanga
 		if (balance(node) > 1 && balance(node->stanga) >= 0) {
 			return R_Dreapta(node);
 		}
 
-		// Cazul stanga-dreapta
+		// stanga dreapta
 		if (balance(node) > 1 && balance(node->stanga) < 0) {
 			node->stanga = R_Stanga(node->stanga);
 			return R_Dreapta(node);
 		}
 
-		// Cazul dreapta-dreapta
+		// dreapta dreapta
 		if (balance(node) < -1 && balance(node->dreapta) <= 0) {
 			return R_Stanga(node);
 		}
 
-		// Cazul dreapta-stanga
+		// dreapta stanga
 		if (balance(node) < -1 && balance(node->dreapta) > 0) {
 			node->dreapta = R_Dreapta(node->dreapta);
 			return R_Stanga(node);
@@ -279,23 +260,27 @@ public:
 		}
 	}
 
+	
 	int find(nod* node, int valoare)
 	{
 		if (node == NULL)
 			return 0;
-		else
-		{
-			if (node->valoare == valoare)
+		else{
+			
+			if (node != NULL && node->valoare == valoare)
 				return 1;
 			else {
-				if (node->valoare > valoare)
-					find(node->stanga, valoare);
+				if (node != NULL && node->valoare > valoare)
+					return find(node->stanga, valoare);
 				else
-					find(node->dreapta, valoare);
+					return find(node->dreapta, valoare);
+
 			}
 		}
 	}
+
 	
+
 	//cel mai mic nr mai mare sau egal decat x
 	int min(nod* n, int x)
 	{
@@ -353,7 +338,7 @@ int main()
 	int n, x, y, z;
 	fin >> n;
 
-	for (int i = 0;i < n;++i)
+	for (int i = 0; i < n; ++i)
 	{
 		fin >> x;
 
