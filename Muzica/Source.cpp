@@ -1,40 +1,38 @@
+#include <iostream>
 #include <fstream>
 #include <unordered_set>
-
 
 std::ifstream fin("muzica.in");
 std::ofstream fout("muzica.out");
 
 int main()
 {
-	int x, y, A, B, C, D, E, n;
-	std::unordered_set <int> mm;
-	
+	int x, y;
+	long long a, b, c, d, e, n;
 	fin >> x >> y;
-	fin >> A >> B >> C >> D >> E;
-	int cont = 0;
+	fin >> a >> b >> c >> d >> e;
+	std::unordered_set <long long> s(10 * x);
 
-	mm.insert(A);
-	mm.insert(B);
-	
-	int aux1, aux2, aux3;
-	aux1 = A;
-	aux2 = B;
-
-	for (int i = 3;i <= y;++i)
-	{
-		aux3 = (C * aux1 + D * aux2) % E;
-		mm.insert(aux3);
-		aux2 = aux1;
-		aux1 = aux3;
-	}
-
-	for (int i = 0;i < x;++i)
+	for (int i = 0;i < x;i++)
 	{
 		fin >> n;
-		//auto val = mm.find(n);
-		if (mm.find(n) != mm.end())
+		s.insert(n);
+	}
+	int cont = 0;
+
+	for (int i = 0;i < y && (!s.empty());i++)
+	{
+		auto var = s.find(a);
+		if (var != s.end())
+		{
+			s.erase(a);
 			cont++;
+		}
+		
+		long long aux = ((c * b) + (d * a)) % e;
+		a = b;
+		b = aux;
+
 	}
 
 	fout << cont;
